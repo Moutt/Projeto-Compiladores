@@ -1,0 +1,9 @@
+prg Exemplo;
+var
+    int x;
+begin
+    write("Olá mundo!");
+    x <- 10;
+    if (x > 5) then
+        write("Maior que 5");
+end.
