@@ -6,3 +6,4 @@ begin
     x <- 10;
     if (x > 5) then
         write("Maior que 5");
+end.

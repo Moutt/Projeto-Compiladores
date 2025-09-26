@@ -1,4 +1,5 @@
 # Projeto-Compiladores
-# Dicas para execução:
+
+# Como rodar:
 # gcc main.c analisador_lexico.c -o analisador
 # ./analisador 
