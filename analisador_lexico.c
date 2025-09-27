@@ -136,11 +136,10 @@ TInfoAtomo obter_atomo(void) {
         c = proximo_char();
         atomo.tipo = TK_CHAR_CONST;
         atomo.valor.caractere = c;
-        proximo_char(); // descartar '
+        proximo_char();
         return atomo;
     }
 
-    // Operadores compostos
     if (c == '<') {
         int c2 = proximo_char();
         if (c2 == '-') { atomo.tipo = TK_ASSIGN; return atomo; }
@@ -165,7 +164,7 @@ TInfoAtomo obter_atomo(void) {
         retroceder_char(c2);
     }
 
-    // Símbolos simples
+    
     switch (c) {
         case '+': atomo.tipo = TK_PLUS; break;
         case '-': atomo.tipo = TK_MINUS; break;
