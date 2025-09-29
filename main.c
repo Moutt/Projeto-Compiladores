@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include "analisador_lexico.h"
+#include "analisador_lexico.c"
 
 const char* nome_token(TAtomo tipo) {
     switch (tipo) {
