@@ -9,26 +9,26 @@ static int linha = 1;
 
 void abrir_arquivo(const char *nome) {
     fonte = fopen(nome, "r");
-    if (!fonte) {
+    if(!fonte) {
         perror("Erro ao abrir arquivo fonte");
         exit(1);
     }
 }
 
 void fechar_arquivo() {
-    if (fonte) fclose(fonte);
+    if(fonte) fclose(fonte);
 }
 
 int proximo_char() {
     int c = fgetc(fonte);
-    if (c == '\n') linha++;
+    if(c == '\n') linha++;
     return c;
 }
 
 void retroceder_char(int c) {
-    if (c != EOF) {
+    if(c != EOF) {
         ungetc(c, fonte);
-        if (c == '\n') linha--;
+        if(c == '\n') linha--;
     }
 }
 
@@ -42,8 +42,8 @@ int palavra_reservada(const char *lexema, TAtomo *tipo) {
         {"var", TK_VAR}, {"void", TK_VOID}, {"while", TK_WHILE}, {"write", TK_WRITE}
     };
 
-    for (int i = 0; i < sizeof(tabela)/sizeof(tabela[0]); i++) {
-        if (strcmp(lexema, tabela[i].palavra) == 0) {
+    for(int i = 0; i < sizeof(tabela)/sizeof(tabela[0]); i++) {
+        if(strcmp(lexema, tabela[i].palavra) == 0) {
             *tipo = tabela[i].token;
             return 1;
         }
@@ -54,75 +54,78 @@ int palavra_reservada(const char *lexema, TAtomo *tipo) {
 TInfoAtomo obter_atomo(void) {
     TInfoAtomo atomo;
     atomo.tipo = TK_ERROR;
-    atomo.linha = linha;
 
     int c;
 
-    // Ignorar espaços e comentários
-    while ((c = proximo_char()) != EOF) {
-        if (isspace(c)) continue;
-
-        if (c == '{') {
-            while ((c = proximo_char()) != EOF && c != '}');
+    // Para ignorar espaços e comentários
+    while((c = proximo_char()) != EOF) {
+        if(c == ' ' || c == '\n' || c == '\t'){
             continue;
         }
 
+        if(c == '{') {
+            while((c = proximo_char()) != EOF && c != '}'){
+                continue;
+            }
+        }
         break;
     }
 
-    if (c == EOF) {
+    atomo.linha = linha;
+
+    if(c == EOF) {
         atomo.tipo = TK_EOF;
         return atomo;
     }
 
     // Identificadores ou palavras reservadas
-    if (isalpha(c) || c == '_') {
-        char buffer[256];
+    if((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '_') {
+        char palavra[256];
         int i = 0;
-        buffer[i++] = c;
-        while ((c = proximo_char()), (isalnum(c) || c == '_')) {
-            buffer[i++] = c;
+        palavra[i++] = c;
+        while((c = proximo_char()),((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c == '_' )){
+            palavra[i++] = c;
         }
-        buffer[i] = '\0';
+        palavra[i] = '\0';
         retroceder_char(c);
 
-        if (palavra_reservada(buffer, &atomo.tipo)) {
+        if(palavra_reservada(palavra, &atomo.tipo)) {
             return atomo;
         } else {
             atomo.tipo = TK_IDENT;
-            strcpy(atomo.valor.str, buffer);
+            strcpy(atomo.valor.str, palavra);
             return atomo;
         }
     }
 
     // Números
-    if (isdigit(c)) {
-        char buffer[256];
+    if(isdigit(c)) {
+        char num[256];
         int i = 0;
-        int isFloat = 0;
-        buffer[i++] = c;
-        while ((c = proximo_char()), (isdigit(c) || c == '.')) {
-            if (c == '.') isFloat = 1;
-            buffer[i++] = c;
+        int Float = 0;
+        num[i++] = c;
+        while((c = proximo_char()),(isdigit(c) || c == '.')) {
+            if(c == '.') Float = 1;
+            num[i++] = c;
         }
-        buffer[i] = '\0';
+        num[i] = '\0';
         retroceder_char(c);
 
-        if (isFloat) {
+        if(Float) {
             atomo.tipo = TK_FLOAT_CONST;
-            atomo.valor.real = atof(buffer);
+            atomo.valor.real = atof(num);
         } else {
             atomo.tipo = TK_INT_CONST;
-            atomo.valor.inteiro = atoi(buffer);
+            atomo.valor.inteiro = atoi(num);
         }
         return atomo;
     }
 
     // Strings
-    if (c == '"') {
+    if(c == '"') {
         char buffer[256];
         int i = 0;
-        while ((c = proximo_char()) != '"' && c != EOF) {
+        while((c = proximo_char()) != '"' && c != EOF) {
             buffer[i++] = c;
         }
         buffer[i] = '\0';
@@ -132,7 +135,7 @@ TInfoAtomo obter_atomo(void) {
     }
 
     // Caracteres
-    if (c == '\'') {
+    if(c == '\'') {
         c = proximo_char();
         atomo.tipo = TK_CHAR_CONST;
         atomo.valor.caractere = c;
@@ -140,32 +143,52 @@ TInfoAtomo obter_atomo(void) {
         return atomo;
     }
 
-    if (c == '<') {
+    if(c == '<') {
         int c2 = proximo_char();
-        if (c2 == '-') { atomo.tipo = TK_ASSIGN; return atomo; }
-        if (c2 == '=') { atomo.tipo = TK_LTE; return atomo; }
+        if(c2 == '-'){
+            atomo.tipo = TK_ASSIGN;
+            return atomo;
+        }
+        if(c2 == '='){
+            atomo.tipo = TK_LTE;
+            return atomo;
+        }
+
         retroceder_char(c2);
         atomo.tipo = TK_LT; return atomo;
     }
-    if (c == '>') {
+
+    if(c == '>') {
         int c2 = proximo_char();
-        if (c2 == '=') { atomo.tipo = TK_GTE; return atomo; }
+        if(c2 == '='){
+            atomo.tipo = TK_GTE;
+            return atomo;
+        }
         retroceder_char(c2);
-        atomo.tipo = TK_GT; return atomo;
+        atomo.tipo = TK_GT;
+        return atomo;
     }
-    if (c == '=') {
+
+    if(c == '=') {
         int c2 = proximo_char();
-        if (c2 == '=') { atomo.tipo = TK_EQ; return atomo; }
+        if(c2 == '='){
+            atomo.tipo = TK_EQ;
+            return atomo;
+        }
         retroceder_char(c2);
     }
-    if (c == '!') {
+    
+    if(c == '!') {
         int c2 = proximo_char();
-        if (c2 == '=') { atomo.tipo = TK_NEQ; return atomo; }
+        if(c2 == '='){
+            atomo.tipo = TK_NEQ;
+            return atomo;
+        }
         retroceder_char(c2);
     }
 
     
-    switch (c) {
+    switch(c) {
         case '+': atomo.tipo = TK_PLUS; break;
         case '-': atomo.tipo = TK_MINUS; break;
         case '*': atomo.tipo = TK_MUL; break;
