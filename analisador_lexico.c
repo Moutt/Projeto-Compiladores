@@ -1,8 +1,9 @@
+#include "analisador_lexico.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <ctype.h>
-#include "analisador_lexico.h"
+
+
 
 static FILE *fonte;
 static int linha = 1;
@@ -91,7 +92,7 @@ TInfoAtomo obter_atomo(void) {
 
         if(palavra_reservada(palavra, &atomo.tipo)) {
             return atomo;
-        } else {
+        }else{
             atomo.tipo = TK_IDENT;
             strcpy(atomo.valor.str, palavra);
             return atomo;
@@ -99,12 +100,12 @@ TInfoAtomo obter_atomo(void) {
     }
 
     // Números
-    if(isdigit(c)) {
+    if(c >= '0' && c <= '9') {
         char num[256];
         int i = 0;
         int Float = 0;
         num[i++] = c;
-        while((c = proximo_char()),(isdigit(c) || c == '.')) {
+        while((c = proximo_char()),((c >= '0' && c <= '9') || c == '.')) {
             if(c == '.') Float = 1;
             num[i++] = c;
         }
@@ -114,7 +115,7 @@ TInfoAtomo obter_atomo(void) {
         if(Float) {
             atomo.tipo = TK_FLOAT_CONST;
             atomo.valor.real = atof(num);
-        } else {
+        }else{
             atomo.tipo = TK_INT_CONST;
             atomo.valor.inteiro = atoi(num);
         }
@@ -123,14 +124,14 @@ TInfoAtomo obter_atomo(void) {
 
     // Strings
     if(c == '"') {
-        char buffer[256];
+        char palavra[256];
         int i = 0;
         while((c = proximo_char()) != '"' && c != EOF) {
-            buffer[i++] = c;
+            palavra[i++] = c;
         }
-        buffer[i] = '\0';
+        palavra[i] = '\0';
         atomo.tipo = TK_STRING_CONST;
-        strcpy(atomo.valor.str, buffer);
+        strcpy(atomo.valor.str, palavra);
         return atomo;
     }
 
